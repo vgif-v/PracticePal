@@ -75,6 +75,15 @@ class KineticColors {
   static const accentLilac = Color(0xFF8B5CF6);
   static const warmCream = Color(0xFFFCFBF7);
   static const deepSlate = Color(0xFF1E2238);
+
+  // Cool / dark tokens
+  static const coolDark = Color(0xFF0F172A);
+  static const coolSlate = Color(0xFF1E293B);
+  static const coolBlue = Color(0xFF2563EB);
+  static const coolBlueLight = Color(0xFF3B82F6);
+  static const coolBorder = Color(0xFFCBD5E1);
+  static const coolInputBg = Color(0xFFF8FAFC);
+  static const coolMutedText = Color(0xFF64748B);
 }
 
 // ---------------------------------------------------------------------------
@@ -240,6 +249,15 @@ class KineticShadows {
   static List<BoxShadow> coralPop = [
     BoxShadow(
       color: KineticColors.electricCoral.withValues(alpha: 0.35),
+      offset: const Offset(0, 8),
+      blurRadius: 20,
+    ),
+  ];
+
+  /// Cool dark pop shadow for primary action buttons.
+  static List<BoxShadow> coolDarkPop = [
+    BoxShadow(
+      color: KineticColors.coolDark.withValues(alpha: 0.25),
       offset: const Offset(0, 8),
       blurRadius: 20,
     ),
