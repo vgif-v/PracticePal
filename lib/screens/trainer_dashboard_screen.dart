@@ -141,18 +141,24 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                 Container(
                   width: 40,
                   height: 40,
+                  padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [KineticColors.coolDark, KineticColors.coolBlue],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(KineticRadii.sm),
-                  ),
-                  child: const Icon(
-                    Icons.sports_gymnastics_rounded,
                     color: Colors.white,
-                    size: 22,
+                    borderRadius: BorderRadius.circular(KineticRadii.sm),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(KineticRadii.sm),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -313,6 +319,33 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
             ),
             child: Row(
               children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  padding: const EdgeInsets.all(3),
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: KineticColors.coolBorder.withValues(alpha: 0.8),
+                      width: 1,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

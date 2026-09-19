@@ -733,15 +733,24 @@ class _StudentTrackingScreenState extends State<StudentTrackingScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(4),
+                  width: 26,
+                  height: 26,
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: widget.isTrainerView
-                        ? KineticColors.coolBlue
-                        : KineticColors.electricCoral,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(KineticRadii.sm),
+                    border: Border.all(
+                      color: KineticColors.coolBorder.withValues(alpha: 0.8),
+                      width: 1,
+                    ),
                   ),
-                  child: const Icon(Icons.sports_gymnastics_rounded,
-                      size: 14, color: Colors.white),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 6),
                 RichText(
@@ -887,13 +896,24 @@ class _StudentTrackingScreenState extends State<StudentTrackingScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(4),
+                width: 24,
+                height: 24,
+                padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: KineticColors.electricCoral,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(KineticRadii.sm),
+                  border: Border.all(
+                    color: KineticColors.coolBorder.withValues(alpha: 0.8),
+                    width: 1,
+                  ),
                 ),
-                child: const Icon(Icons.sports_gymnastics_rounded,
-                    size: 13, color: Colors.white),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               Text(

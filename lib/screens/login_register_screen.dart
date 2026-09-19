@@ -500,27 +500,30 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
     return Column(
       children: [
         Container(
-          width: 64,
-          height: 64,
+          width: 76,
+          height: 76,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [KineticColors.coolDark, KineticColors.coolBlue],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(KineticRadii.md),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(KineticRadii.lg),
             boxShadow: [
               BoxShadow(
-                color: KineticColors.coolBlue.withValues(alpha: 0.30),
+                color: const Color(0xFF0D9488).withValues(alpha: 0.20),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
             ],
+            border: Border.all(
+              color: KineticColors.coolBorder.withValues(alpha: 0.5),
+              width: 1.5,
+            ),
           ),
-          child: const Icon(
-            Icons.sports_gymnastics_rounded,
-            color: Colors.white,
-            size: 36,
+          padding: const EdgeInsets.all(6),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(KineticRadii.md),
+            child: Image.asset(
+              'assets/images/logo.png',
+              fit: BoxFit.contain,
+            ),
           ),
         ),
         const SizedBox(height: KineticSpacing.sm),

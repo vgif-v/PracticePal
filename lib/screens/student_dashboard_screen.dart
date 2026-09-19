@@ -336,11 +336,31 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         titleSpacing: KineticSpacing.gutter,
         title: Row(
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: KineticColors.coolBlue.withValues(alpha: 0.15),
-              child: const Icon(Icons.person_rounded,
-                  size: 20, color: KineticColors.coolBlue),
+            Container(
+              width: 38,
+              height: 38,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+                border: Border.all(
+                  color: KineticColors.coolBorder.withValues(alpha: 0.8),
+                  width: 1,
+                ),
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
             const SizedBox(width: 10),
             Column(
@@ -1377,13 +1397,31 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          width: 32,
+          height: 32,
+          padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: KineticColors.electricCoral,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(KineticRadii.sm),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(
+              color: KineticColors.coolBorder.withValues(alpha: 0.8),
+              width: 1,
+            ),
           ),
-          child: const Icon(Icons.sports_gymnastics_rounded,
-              size: 18, color: Colors.white),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(KineticRadii.sm),
+            child: Image.asset(
+              'assets/images/logo.png',
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
         const SizedBox(width: 8),
         RichText(
