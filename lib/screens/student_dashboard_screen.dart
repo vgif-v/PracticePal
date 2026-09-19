@@ -371,7 +371,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               final nav = Navigator.of(context);
               await FirebaseAuth.instance.signOut();
               if (!mounted) return;
-              nav.pushReplacementNamed('/');
+              nav.pushNamedAndRemoveUntil('/', (route) => false);
             },
           ),
           const SizedBox(width: 8),
@@ -894,7 +894,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   final nav = Navigator.of(context);
                   await FirebaseAuth.instance.signOut();
                   if (!mounted) return;
-                  nav.pushReplacementNamed('/');
+                  nav.pushNamedAndRemoveUntil('/', (route) => false);
                 },
                 icon: const Icon(Icons.logout_rounded,
                     color: KineticColors.electricCoral),
@@ -1417,7 +1417,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         final nav = Navigator.of(context);
         await FirebaseAuth.instance.signOut();
         if (!mounted) return;
-        nav.pushReplacementNamed('/');
+        nav.pushNamedAndRemoveUntil('/', (route) => false);
       },
     );
   }

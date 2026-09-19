@@ -1132,7 +1132,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                       onTap: () async {
                         await _authService.signOut();
                         if (!mounted) return;
-                        Navigator.pushReplacementNamed(context, '/');
+                        Navigator.pushNamedAndRemoveUntil(
+                            context, '/', (route) => false);
                       },
                     ),
                   ],
