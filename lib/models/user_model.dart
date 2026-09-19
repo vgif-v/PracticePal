@@ -32,14 +32,24 @@ class UserModel {
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
+    DateTime? parsedBirthdate;
+    final rawBirthdate = map['birthdate'];
+    if (rawBirthdate != null) {
+      if (rawBirthdate is Timestamp) {
+        parsedBirthdate = rawBirthdate.toDate();
+      } else if (rawBirthdate is String) {
+        parsedBirthdate = DateTime.tryParse(rawBirthdate);
+      } else if (rawBirthdate is int) {
+        parsedBirthdate = DateTime.fromMillisecondsSinceEpoch(rawBirthdate);
+      }
+    }
+
     return UserModel(
       uid: uid,
       role: map['role'] == 'trainer' ? UserRole.trainer : UserRole.student,
       fullName: map['fullName'] ?? '',
       address: map['address'] ?? '',
-      birthdate: map['birthdate'] != null
-          ? (map['birthdate'] as Timestamp).toDate()
-          : null,
+      birthdate: parsedBirthdate,
       email: map['email'] ?? '',
     );
   }

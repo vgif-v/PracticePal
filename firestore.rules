@@ -1,0 +1,162 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Safely retrieves user profile data from /users/{uid}
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Checks if user has a given role
+    function hasRole(targetRole) {
+      let data = getUserData();
+      return data != null && (
+        data.get('role', '') == targetRole ||
+        (data.get('roles', []) is list && targetRole in data.get('roles', []))
+      );
+    }
+
+    function isTrainer() {
+      return hasRole('trainer');
+    }
+
+    function isStudent() {
+      return hasRole('student');
+    }
+
+    // Check if caller is the trainer for a given class (by classId)
+    function isClassTrainer(classId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/classes/$(classId)).data.trainerId == request.auth.uid;
+    }
+
+    // -------------------------------------------------------------------------
+    // Users Collection & Enrolled Classes Subcollections
+    // -------------------------------------------------------------------------
+
+    match /users/{userId} {
+      // Any authenticated user can read basic profiles (needed to display names)
+      allow read: if isSignedIn();
+      // Users can only create and update their own document
+      allow create: if isOwner(userId);
+      // Allow update of own document (profile completion: address, birthdate)
+      allow update: if isOwner(userId);
+      allow delete: if false;
+
+      // Subcollection used in Dart code: enrolled_classes
+      match /enrolled_classes/{classId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Alias for enrolledClasses (camelCase support)
+      match /enrolledClasses/{classId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Classes Collection
+    // -------------------------------------------------------------------------
+
+    match /classes/{classId} {
+      // 1. READ:
+      // - Trainers can query where('trainerId', '==', uid) to stream their own classes
+      // - Students can query where('joinCode', '==', code) to find classes to join
+      allow read: if isSignedIn();
+
+      // 2. CREATE:
+      // Only trainers can create classes; trainerId must match their own UID
+      allow create: if isSignedIn()
+                    && isTrainer()
+                    && request.resource.data.trainerId == request.auth.uid;
+
+      // 3. UPDATE:
+      // Case A: Class owner (trainer) can update any class details
+      // Case B: Student joining via code can only update 'students' and 'studentCount'
+      allow update: if isSignedIn() && (
+        // Case A: Trainer who owns this class
+        (resource.data.trainerId == request.auth.uid)
+        ||
+        // Case B: Student joining — only modifying the students roster
+        (
+          request.resource.data.trainerId == resource.data.trainerId &&
+          request.resource.data.joinCode == resource.data.joinCode &&
+          request.resource.data.name == resource.data.name &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['students', 'studentCount'])
+        )
+      );
+
+      // 4. DELETE:
+      // Only the trainer who created the class can delete it
+      allow delete: if isSignedIn() && resource.data.trainerId == request.auth.uid;
+
+      // -----------------------------------------------------------------------
+      // Members Subcollection — /classes/{classId}/members/{memberId}
+      // Used by trainer manual enrollment or future subcollection migration
+      // -----------------------------------------------------------------------
+      match /members/{memberId} {
+        // Any signed-in user can read members of a class
+        allow read: if isSignedIn();
+        // Trainer can create members (manual enrollment)
+        allow create: if isSignedIn() &&
+          get(/databases/$(database)/documents/classes/$(classId)).data.trainerId == request.auth.uid;
+        // Student can also create their own member record (via join code)
+        // Trainer can update member records (session status, payment updates)
+        allow update: if isSignedIn() && (
+          isOwner(memberId) ||
+          get(/databases/$(database)/documents/classes/$(classId)).data.trainerId == request.auth.uid
+        );
+        // Trainer or the student themselves can delete the record
+        allow delete: if isSignedIn() && (
+          isOwner(memberId) ||
+          get(/databases/$(database)/documents/classes/$(classId)).data.trainerId == request.auth.uid
+        );
+
+        // -------------------------------------------------------------------
+        // Session Status Subcollection
+        // /classes/{classId}/members/{memberId}/sessionStatus/{sessionId}
+        // Trainer writes, student reads
+        // -------------------------------------------------------------------
+        match /sessionStatus/{sessionId} {
+          allow read: if isSignedIn();
+          allow write: if isSignedIn() &&
+            get(/databases/$(database)/documents/classes/$(classId)).data.trainerId == request.auth.uid;
+        }
+
+        // -------------------------------------------------------------------
+        // Cycles Subcollection
+        // /classes/{classId}/members/{memberId}/cycles/{cycleId}
+        // Trainer writes, student reads
+        // -------------------------------------------------------------------
+        match /cycles/{cycleId} {
+          allow read: if isSignedIn();
+          allow write: if isSignedIn() &&
+            get(/databases/$(database)/documents/classes/$(classId)).data.trainerId == request.auth.uid;
+
+          // -----------------------------------------------------------------
+          // Payments Subcollection
+          // /classes/{classId}/members/{memberId}/cycles/{cycleId}/payments/{paymentId}
+          // Trainer writes, student reads
+          // -----------------------------------------------------------------
+          match /payments/{paymentId} {
+            allow read: if isSignedIn();
+            allow write: if isSignedIn() &&
+              get(/databases/$(database)/documents/classes/$(classId)).data.trainerId == request.auth.uid;
+          }
+        }
+      }
+    }
+  }
+}

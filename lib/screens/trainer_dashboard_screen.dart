@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/theme.dart';
-import '../models/demo_data.dart';
 import '../services/auth_service.dart';
 import '../services/class_service.dart';
 import 'class_detail_screen.dart';
@@ -44,13 +43,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         ? widget.trainerName
         : (user?.displayName ?? user?.email?.split('@').first ?? 'Trainer');
 
-    // Default starter class requested: Regielou's Class
-    _classes = [
-      DemoData.getRegielouClass(
-        trainerName: _effectiveTrainerName,
-        trainerId: _effectiveTrainerId,
-      ),
-    ];
+    // Clean up any previously seeded demo class so only real classes appear
+    _classService.cleanUpDemoData();
   }
 
   // -------------------------------------------------------------------------
@@ -71,25 +65,17 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
               // Main content (StreamBuilder for real-time per-trainer classes)
               Expanded(
                 child: StreamBuilder<List<ClassModel>>(
-                  stream: _classService.streamTrainerClasses(_effectiveTrainerId),
+                  stream: _classService.streamTrainerClasses(
+                    _effectiveTrainerId,
+                  ),
                   builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                    if (snapshot.hasData) {
                       _classes = snapshot.data!;
-                    } else if (_classes.isEmpty) {
-                      _classes = [
-                        DemoData.getRegielouClass(
-                          trainerName: _effectiveTrainerName,
-                          trainerId: _effectiveTrainerId,
-                        ),
-                      ];
                     }
 
                     return IndexedStack(
                       index: _navIndex,
-                      children: [
-                        _buildClassesTab(),
-                        _buildProfileTab(),
-                      ],
+                      children: [_buildClassesTab(), _buildProfileTab()],
                     );
                   },
                 ),
@@ -114,12 +100,18 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
       destinations: const [
         NavigationDestination(
           icon: Icon(Icons.school_outlined),
-          selectedIcon: Icon(Icons.school_rounded, color: KineticColors.coolBlue),
+          selectedIcon: Icon(
+            Icons.school_rounded,
+            color: KineticColors.coolBlue,
+          ),
           label: 'My Classes',
         ),
         NavigationDestination(
           icon: Icon(Icons.person_outline_rounded),
-          selectedIcon: Icon(Icons.person_rounded, color: KineticColors.coolBlue),
+          selectedIcon: Icon(
+            Icons.person_rounded,
+            color: KineticColors.coolBlue,
+          ),
           label: 'Profile',
         ),
       ],
@@ -135,10 +127,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
-          right: BorderSide(
-            color: KineticColors.coolBorder,
-            width: 1.5,
-          ),
+          right: BorderSide(color: KineticColors.coolBorder, width: 1.5),
         ),
       ),
       child: Column(
@@ -224,7 +213,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                 children: [
                   CircleAvatar(
                     radius: 18,
-                    backgroundColor: KineticColors.coolBlue.withValues(alpha: 0.15),
+                    backgroundColor: KineticColors.coolBlue.withValues(
+                      alpha: 0.15,
+                    ),
                     child: Text(
                       _effectiveTrainerName.isNotEmpty
                           ? _effectiveTrainerName[0].toUpperCase()
@@ -453,7 +444,10 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: KineticColors.coolDark,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(KineticRadii.full),
                 ),
@@ -471,8 +465,10 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   }
 
   Widget _buildClassSummaryBar() {
-    final totalStudents =
-        _classes.fold<int>(0, (sum, c) => sum + c.students.length);
+    final totalStudents = _classes.fold<int>(
+      0,
+      (sum, c) => sum + c.students.length,
+    );
     final totalCompleted = _classes.fold<int>(
       0,
       (sum, c) =>
@@ -580,10 +576,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(KineticRadii.md),
         boxShadow: KineticShadows.level1,
-        border: Border.all(
-          color: KineticColors.coolBorder,
-          width: 1.2,
-        ),
+        border: Border.all(color: KineticColors.coolBorder, width: 1.2),
       ),
       child: Material(
         color: Colors.transparent,
@@ -595,9 +588,11 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
               context,
               MaterialPageRoute(
                 builder: (_) => ClassDetailScreen(
+                  classId: trainerClass.id,
                   className: trainerClass.name,
                   joinCode: trainerClass.joinCode,
                   trainerName: _effectiveTrainerName,
+                  trainerId: _effectiveTrainerId,
                   students: trainerClass.students,
                 ),
               ),
@@ -638,14 +633,15 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      Row(
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
                         children: [
                           _buildChip(
                             icon: Icons.groups_rounded,
                             label: '$studentCount students',
                             color: KineticColors.secondary,
                           ),
-                          const SizedBox(width: 6),
                           _buildChip(
                             icon: Icons.star_rounded,
                             label: '$totalStars stars',
@@ -709,6 +705,15 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                 ),
 
                 const SizedBox(width: 4),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    size: 18,
+                    color: KineticColors.coolMutedText,
+                  ),
+                  tooltip: 'Delete class',
+                  onPressed: () => _confirmDeleteClass(trainerClass),
+                ),
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
@@ -720,6 +725,56 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteClass(ClassModel cls) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Class'),
+        content: Text('Are you sure you want to delete "${cls.name}"? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _classService.deleteClass(cls.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('Class "${cls.name}" deleted.'),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('Failed to delete class: $e'),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+        }
+      }
+    }
   }
 
   Widget _buildChip({
@@ -753,26 +808,28 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
 
   void _copyJoinCode(String code) {
     Clipboard.setData(ClipboardData(text: code));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white),
-            const SizedBox(width: 8),
-            Text(
-              'Join code $code copied!',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ],
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                'Join code $code copied!',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: KineticColors.coolDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(KineticRadii.dflt),
+          ),
         ),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: KineticColors.coolDark,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(KineticRadii.dflt),
-        ),
-      ),
-    );
+      );
   }
 
   // -------------------------------------------------------------------------
@@ -782,6 +839,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     final nameCtrl = TextEditingController();
     final scheduleCtrl = TextEditingController(text: 'Tues & Thu • 4:30 PM');
     final roomCtrl = TextEditingController(text: 'Main Studio');
+    final paymentCtrl = TextEditingController(text: '1,500');
 
     showDialog(
       context: context,
@@ -826,7 +884,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(KineticRadii.dflt),
-                    borderSide: const BorderSide(color: KineticColors.coolBorder),
+                    borderSide: const BorderSide(
+                      color: KineticColors.coolBorder,
+                    ),
                   ),
                 ),
               ),
@@ -840,7 +900,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(KineticRadii.dflt),
-                    borderSide: const BorderSide(color: KineticColors.coolBorder),
+                    borderSide: const BorderSide(
+                      color: KineticColors.coolBorder,
+                    ),
                   ),
                 ),
               ),
@@ -854,7 +916,33 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(KineticRadii.dflt),
-                    borderSide: const BorderSide(color: KineticColors.coolBorder),
+                    borderSide: const BorderSide(
+                      color: KineticColors.coolBorder,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: KineticSpacing.md),
+              TextField(
+                controller: paymentCtrl,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: 'Default Payment Amount',
+                  hintText: 'e.g. 1500',
+                  prefixText: '₱ ',
+                  prefixStyle: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: KineticColors.coolDark,
+                  ),
+                  fillColor: KineticColors.coolInputBg,
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(KineticRadii.dflt),
+                    borderSide: const BorderSide(
+                      color: KineticColors.coolBorder,
+                    ),
                   ),
                 ),
               ),
@@ -881,25 +969,34 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                       room: roomCtrl.text.trim().isNotEmpty
                           ? roomCtrl.text.trim()
                           : 'Main Studio',
+                      defaultPaymentAmount: paymentCtrl.text.trim().isNotEmpty
+                          ? paymentCtrl.text.trim()
+                          : '₱0',
                     );
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Class "$name" created successfully!'),
-                          backgroundColor: KineticColors.secondary,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      ScaffoldMessenger.of(context)
+                        ..clearSnackBars()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text('Class "$name" created successfully!'),
+                            backgroundColor: KineticColors.secondary,
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
                     }
                   } catch (e) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error creating class: $e'),
-                          backgroundColor: KineticColors.error,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      ScaffoldMessenger.of(context)
+                        ..clearSnackBars()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text('Error creating class: $e'),
+                            backgroundColor: KineticColors.error,
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
                     }
                   }
                 }
@@ -938,8 +1035,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                   children: [
                     CircleAvatar(
                       radius: 44,
-                      backgroundColor:
-                          KineticColors.coolBlue.withValues(alpha: 0.15),
+                      backgroundColor: KineticColors.coolBlue.withValues(
+                        alpha: 0.15,
+                      ),
                       child: Text(
                         _effectiveTrainerName
                             .split(' ')

@@ -12,7 +12,20 @@
           "package_name": "com.example.practicepal"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1060894129891-0gpk9h8e7cc9n4ea200e03minf2ka0v1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.practicepal",
+            "certificate_hash": "7fd4352896fbf0eb219156829a117378041fea9a"
+          }
+        },
+        {
+          "client_id": "1060894129891-67klap1ulr5ulsnpq74ls9unkkj79a30.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDyQ_5SDlG-eWM65W-ed7kUHG4ateWP9P8"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1060894129891-67klap1ulr5ulsnpq74ls9unkkj79a30.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1060894129891-b0qe8k70gr3vqbhoqn9gf2dmap5uh3id.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.practicepal"
+              }
+            }
+          ]
         }
       }
     }
