@@ -643,10 +643,8 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                     color: KineticColors.coolBlue.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(KineticRadii.dflt),
                   ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    color: KineticColors.coolBlue,
-                    size: 26,
+                  child: const Center(
+                    child: Text('🕺', style: TextStyle(fontSize: 26)),
                   ),
                 ),
                 const SizedBox(width: KineticSpacing.md),
