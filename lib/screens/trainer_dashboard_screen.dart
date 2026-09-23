@@ -644,7 +644,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                     borderRadius: BorderRadius.circular(KineticRadii.dflt),
                   ),
                   child: const Center(
-                    child: Text('🕺', style: TextStyle(fontSize: 26)),
+                    child: Text('🕺💃', style: TextStyle(fontSize: 18)),
                   ),
                 ),
                 const SizedBox(width: KineticSpacing.md),
@@ -763,7 +763,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Class'),
-        content: Text('Are you sure you want to delete "${cls.name}"? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete "${cls.name}"? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -956,8 +958,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
               const SizedBox(height: KineticSpacing.md),
               TextField(
                 controller: paymentCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Default Payment Amount',
                   hintText: 'e.g. 1500',
@@ -1009,7 +1012,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         ..clearSnackBars()
                         ..showSnackBar(
                           SnackBar(
-                            content: Text('Class "$name" created successfully!'),
+                            content: Text(
+                              'Class "$name" created successfully!',
+                            ),
                             backgroundColor: KineticColors.secondary,
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 2),
@@ -1164,7 +1169,10 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                         await _authService.signOut();
                         if (!mounted) return;
                         Navigator.pushNamedAndRemoveUntil(
-                            context, '/', (route) => false);
+                          context,
+                          '/',
+                          (route) => false,
+                        );
                       },
                     ),
                   ],
